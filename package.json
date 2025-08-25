@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.8.0",
+    "ts-proto": "^2.7.7"
+  }
+}

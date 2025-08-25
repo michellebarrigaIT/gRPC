@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, Metadata, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 
 export const protobufPackage = "user";
 
@@ -49,6 +40,8 @@ export interface UserListResponse {
   users: UserResponse[];
 }
 
+export const USER_PACKAGE_NAME = "user";
+
 function createBaseEmpty(): Empty {
   return {};
 }
@@ -71,23 +64,6 @@ export const Empty: MessageFns<Empty> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(_: any): Empty {
-    return {};
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Empty>, I>>(base?: I): Empty {
-    return Empty.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
-    const message = createBaseEmpty();
     return message;
   },
 };
@@ -136,34 +112,6 @@ export const CreateUserRequest: MessageFns<CreateUserRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): CreateUserRequest {
-    return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-    };
-  },
-
-  toJSON(message: CreateUserRequest): unknown {
-    const obj: any = {};
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateUserRequest>, I>>(base?: I): CreateUserRequest {
-    return CreateUserRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateUserRequest>, I>>(object: I): CreateUserRequest {
-    const message = createBaseCreateUserRequest();
-    message.name = object.name ?? "";
-    message.email = object.email ?? "";
     return message;
   },
 };
@@ -225,39 +173,6 @@ export const UpdateUserRequest: MessageFns<UpdateUserRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UpdateUserRequest {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-    };
-  },
-
-  toJSON(message: UpdateUserRequest): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdateUserRequest>, I>>(base?: I): UpdateUserRequest {
-    return UpdateUserRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdateUserRequest>, I>>(object: I): UpdateUserRequest {
-    const message = createBaseUpdateUserRequest();
-    message.id = object.id ?? 0;
-    message.name = object.name ?? "";
-    message.email = object.email ?? "";
-    return message;
-  },
 };
 
 function createBaseUserByIdRequest(): UserByIdRequest {
@@ -293,27 +208,6 @@ export const UserByIdRequest: MessageFns<UserByIdRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): UserByIdRequest {
-    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
-  },
-
-  toJSON(message: UserByIdRequest): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserByIdRequest>, I>>(base?: I): UserByIdRequest {
-    return UserByIdRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserByIdRequest>, I>>(object: I): UserByIdRequest {
-    const message = createBaseUserByIdRequest();
-    message.id = object.id ?? 0;
     return message;
   },
 };
@@ -375,39 +269,6 @@ export const UserResponse: MessageFns<UserResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UserResponse {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-    };
-  },
-
-  toJSON(message: UserResponse): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserResponse>, I>>(base?: I): UserResponse {
-    return UserResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserResponse>, I>>(object: I): UserResponse {
-    const message = createBaseUserResponse();
-    message.id = object.id ?? 0;
-    message.name = object.name ?? "";
-    message.email = object.email ?? "";
-    return message;
-  },
 };
 
 function createBaseUserListResponse(): UserListResponse {
@@ -445,30 +306,60 @@ export const UserListResponse: MessageFns<UserListResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UserListResponse {
-    return {
-      users: globalThis.Array.isArray(object?.users) ? object.users.map((e: any) => UserResponse.fromJSON(e)) : [],
-    };
-  },
-
-  toJSON(message: UserListResponse): unknown {
-    const obj: any = {};
-    if (message.users?.length) {
-      obj.users = message.users.map((e) => UserResponse.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserListResponse>, I>>(base?: I): UserListResponse {
-    return UserListResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserListResponse>, I>>(object: I): UserListResponse {
-    const message = createBaseUserListResponse();
-    message.users = object.users?.map((e) => UserResponse.fromPartial(e)) || [];
-    return message;
-  },
 };
+
+export interface UserServiceClient {
+  createUser(request: CreateUserRequest, metadata?: Metadata): Observable<UserResponse>;
+
+  findAll(request: Empty, metadata?: Metadata): Observable<UserListResponse>;
+
+  findOne(request: UserByIdRequest, metadata?: Metadata): Observable<UserResponse>;
+
+  updateUser(request: UpdateUserRequest, metadata?: Metadata): Observable<UserResponse>;
+
+  removeUser(request: UserByIdRequest, metadata?: Metadata): Observable<Empty>;
+}
+
+export interface UserServiceController {
+  createUser(
+    request: CreateUserRequest,
+    metadata?: Metadata,
+  ): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  findAll(
+    request: Empty,
+    metadata?: Metadata,
+  ): Promise<UserListResponse> | Observable<UserListResponse> | UserListResponse;
+
+  findOne(
+    request: UserByIdRequest,
+    metadata?: Metadata,
+  ): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  updateUser(
+    request: UpdateUserRequest,
+    metadata?: Metadata,
+  ): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  removeUser(request: UserByIdRequest, metadata?: Metadata): Promise<Empty> | Observable<Empty> | Empty;
+}
+
+export function UserServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ["createUser", "findAll", "findOne", "updateUser", "removeUser"];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const USER_SERVICE_NAME = "UserService";
 
 export type UserServiceService = typeof UserServiceService;
 export const UserServiceService = {
@@ -527,108 +418,7 @@ export interface UserServiceServer extends UntypedServiceImplementation {
   removeUser: handleUnaryCall<UserByIdRequest, Empty>;
 }
 
-export interface UserServiceClient extends Client {
-  createUser(
-    request: CreateUserRequest,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  createUser(
-    request: CreateUserRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  createUser(
-    request: CreateUserRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  findAll(request: Empty, callback: (error: ServiceError | null, response: UserListResponse) => void): ClientUnaryCall;
-  findAll(
-    request: Empty,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  findAll(
-    request: Empty,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  findOne(
-    request: UserByIdRequest,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  findOne(
-    request: UserByIdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  findOne(
-    request: UserByIdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  updateUser(
-    request: UpdateUserRequest,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  updateUser(
-    request: UpdateUserRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  updateUser(
-    request: UpdateUserRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserResponse) => void,
-  ): ClientUnaryCall;
-  removeUser(
-    request: UserByIdRequest,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-  removeUser(
-    request: UserByIdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-  removeUser(
-    request: UserByIdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-}
-
-export const UserServiceClient = makeGenericClientConstructor(UserServiceService, "user.UserService") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): UserServiceClient;
-  service: typeof UserServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

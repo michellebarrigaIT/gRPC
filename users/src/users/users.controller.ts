@@ -6,7 +6,7 @@ import {
   UpdateUserRequest,
   UserByIdRequest,
   Empty,
-} from '../../../protos/generated/user';
+} from '../proto/user';
 
 @Controller()
 export class UsersController {

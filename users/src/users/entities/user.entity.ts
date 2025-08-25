@@ -3,14 +3,14 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn() 
-  id: number;
+  id!: number;
 
   @Column({ unique: true }) 
-  username: string;
+  username!: string;
 
   @Column({ unique: true }) 
-  email: string;
+  email!: string;
 
   @CreateDateColumn({ type: 'timestamptz' }) 
-  created_at: Date;
+  created_at!: Date;
 }

@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, Metadata, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 
 export const protobufPackage = "task";
 
@@ -55,6 +46,8 @@ export interface TasksResponse {
   tasks: Task[];
 }
 
+export const TASK_PACKAGE_NAME = "task";
+
 function createBaseEmpty(): Empty {
   return {};
 }
@@ -77,23 +70,6 @@ export const Empty: MessageFns<Empty> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(_: any): Empty {
-    return {};
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Empty>, I>>(base?: I): Empty {
-    return Empty.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
-    const message = createBaseEmpty();
     return message;
   },
 };
@@ -155,39 +131,6 @@ export const CreateTaskRequest: MessageFns<CreateTaskRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): CreateTaskRequest {
-    return {
-      title: isSet(object.title) ? globalThis.String(object.title) : "",
-      description: isSet(object.description) ? globalThis.String(object.description) : "",
-      createdBy: isSet(object.createdBy) ? globalThis.Number(object.createdBy) : 0,
-    };
-  },
-
-  toJSON(message: CreateTaskRequest): unknown {
-    const obj: any = {};
-    if (message.title !== "") {
-      obj.title = message.title;
-    }
-    if (message.description !== "") {
-      obj.description = message.description;
-    }
-    if (message.createdBy !== 0) {
-      obj.createdBy = Math.round(message.createdBy);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateTaskRequest>, I>>(base?: I): CreateTaskRequest {
-    return CreateTaskRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateTaskRequest>, I>>(object: I): CreateTaskRequest {
-    const message = createBaseCreateTaskRequest();
-    message.title = object.title ?? "";
-    message.description = object.description ?? "";
-    message.createdBy = object.createdBy ?? 0;
-    return message;
-  },
 };
 
 function createBaseCompleteTaskRequest(): CompleteTaskRequest {
@@ -225,27 +168,6 @@ export const CompleteTaskRequest: MessageFns<CompleteTaskRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): CompleteTaskRequest {
-    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
-  },
-
-  toJSON(message: CompleteTaskRequest): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CompleteTaskRequest>, I>>(base?: I): CompleteTaskRequest {
-    return CompleteTaskRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CompleteTaskRequest>, I>>(object: I): CompleteTaskRequest {
-    const message = createBaseCompleteTaskRequest();
-    message.id = object.id ?? 0;
-    return message;
-  },
 };
 
 function createBaseFindByIdRequest(): FindByIdRequest {
@@ -281,27 +203,6 @@ export const FindByIdRequest: MessageFns<FindByIdRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): FindByIdRequest {
-    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
-  },
-
-  toJSON(message: FindByIdRequest): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<FindByIdRequest>, I>>(base?: I): FindByIdRequest {
-    return FindByIdRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<FindByIdRequest>, I>>(object: I): FindByIdRequest {
-    const message = createBaseFindByIdRequest();
-    message.id = object.id ?? 0;
     return message;
   },
 };
@@ -396,54 +297,6 @@ export const Task: MessageFns<Task> = {
     }
     return message;
   },
-
-  fromJSON(object: any): Task {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      title: isSet(object.title) ? globalThis.String(object.title) : "",
-      description: isSet(object.description) ? globalThis.String(object.description) : "",
-      completed: isSet(object.completed) ? globalThis.Boolean(object.completed) : false,
-      createdBy: isSet(object.createdBy) ? globalThis.Number(object.createdBy) : 0,
-      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
-    };
-  },
-
-  toJSON(message: Task): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.title !== "") {
-      obj.title = message.title;
-    }
-    if (message.description !== "") {
-      obj.description = message.description;
-    }
-    if (message.completed !== false) {
-      obj.completed = message.completed;
-    }
-    if (message.createdBy !== 0) {
-      obj.createdBy = Math.round(message.createdBy);
-    }
-    if (message.createdAt !== "") {
-      obj.createdAt = message.createdAt;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Task>, I>>(base?: I): Task {
-    return Task.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Task>, I>>(object: I): Task {
-    const message = createBaseTask();
-    message.id = object.id ?? 0;
-    message.title = object.title ?? "";
-    message.description = object.description ?? "";
-    message.completed = object.completed ?? false;
-    message.createdBy = object.createdBy ?? 0;
-    message.createdAt = object.createdAt ?? "";
-    return message;
-  },
 };
 
 function createBaseTaskResponse(): TaskResponse {
@@ -479,27 +332,6 @@ export const TaskResponse: MessageFns<TaskResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): TaskResponse {
-    return { task: isSet(object.task) ? Task.fromJSON(object.task) : undefined };
-  },
-
-  toJSON(message: TaskResponse): unknown {
-    const obj: any = {};
-    if (message.task !== undefined) {
-      obj.task = Task.toJSON(message.task);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<TaskResponse>, I>>(base?: I): TaskResponse {
-    return TaskResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<TaskResponse>, I>>(object: I): TaskResponse {
-    const message = createBaseTaskResponse();
-    message.task = (object.task !== undefined && object.task !== null) ? Task.fromPartial(object.task) : undefined;
     return message;
   },
 };
@@ -539,28 +371,53 @@ export const TasksResponse: MessageFns<TasksResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): TasksResponse {
-    return { tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => Task.fromJSON(e)) : [] };
-  },
-
-  toJSON(message: TasksResponse): unknown {
-    const obj: any = {};
-    if (message.tasks?.length) {
-      obj.tasks = message.tasks.map((e) => Task.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<TasksResponse>, I>>(base?: I): TasksResponse {
-    return TasksResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<TasksResponse>, I>>(object: I): TasksResponse {
-    const message = createBaseTasksResponse();
-    message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
-    return message;
-  },
 };
+
+export interface TaskServiceClient {
+  createTask(request: CreateTaskRequest, metadata?: Metadata): Observable<TaskResponse>;
+
+  findAllTasks(request: Empty, metadata?: Metadata): Observable<TasksResponse>;
+
+  completeTask(request: CompleteTaskRequest, metadata?: Metadata): Observable<TaskResponse>;
+
+  findTaskById(request: FindByIdRequest, metadata?: Metadata): Observable<TaskResponse>;
+}
+
+export interface TaskServiceController {
+  createTask(
+    request: CreateTaskRequest,
+    metadata?: Metadata,
+  ): Promise<TaskResponse> | Observable<TaskResponse> | TaskResponse;
+
+  findAllTasks(request: Empty, metadata?: Metadata): Promise<TasksResponse> | Observable<TasksResponse> | TasksResponse;
+
+  completeTask(
+    request: CompleteTaskRequest,
+    metadata?: Metadata,
+  ): Promise<TaskResponse> | Observable<TaskResponse> | TaskResponse;
+
+  findTaskById(
+    request: FindByIdRequest,
+    metadata?: Metadata,
+  ): Promise<TaskResponse> | Observable<TaskResponse> | TaskResponse;
+}
+
+export function TaskServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ["createTask", "findAllTasks", "completeTask", "findTaskById"];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("TaskService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("TaskService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const TASK_SERVICE_NAME = "TaskService";
 
 export type TaskServiceService = typeof TaskServiceService;
 export const TaskServiceService = {
@@ -609,96 +466,7 @@ export interface TaskServiceServer extends UntypedServiceImplementation {
   findTaskById: handleUnaryCall<FindByIdRequest, TaskResponse>;
 }
 
-export interface TaskServiceClient extends Client {
-  createTask(
-    request: CreateTaskRequest,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  createTask(
-    request: CreateTaskRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  createTask(
-    request: CreateTaskRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  findAllTasks(
-    request: Empty,
-    callback: (error: ServiceError | null, response: TasksResponse) => void,
-  ): ClientUnaryCall;
-  findAllTasks(
-    request: Empty,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: TasksResponse) => void,
-  ): ClientUnaryCall;
-  findAllTasks(
-    request: Empty,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TasksResponse) => void,
-  ): ClientUnaryCall;
-  completeTask(
-    request: CompleteTaskRequest,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  completeTask(
-    request: CompleteTaskRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  completeTask(
-    request: CompleteTaskRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  findTaskById(
-    request: FindByIdRequest,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  findTaskById(
-    request: FindByIdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-  findTaskById(
-    request: FindByIdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TaskResponse) => void,
-  ): ClientUnaryCall;
-}
-
-export const TaskServiceClient = makeGenericClientConstructor(TaskServiceService, "task.TaskService") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): TaskServiceClient;
-  service: typeof TaskServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

@@ -24,13 +24,8 @@ $ npm run start:prod
 ## Structure
 ```bash
 grpc/
-    gateway/
-        src/
-        modules/
-            user.module.ts
-        main.ts
-
-    package.json    users/
+    gateway/ 
+    users/
         src/
             users/
                 dto/
@@ -38,6 +33,8 @@ grpc/
                 users.service.ts
                 users.controller.ts
                 users.module.ts
+            main.ts
+            app.module.ts
     tasks/
         src/
             tasks/
@@ -49,7 +46,9 @@ grpc/
     protos/
         user.proto
         task.proto
-    dist/
-        user.ts
-        task.ts
+        generated/
+            user.ts
+            task.ts
+    build.sh
+    package.json
 ```
