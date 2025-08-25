@@ -20,3 +20,33 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Structure
+```bash
+grpc/
+    gateway/
+        users.gateway.ts
+    users/
+        src/
+            users/
+                dto/
+                entities/
+                users.service.ts
+                users.controller.ts
+                users.module.ts
+    tasks/
+        src/
+            tasks/
+                dto/
+                entities/
+                tasks.service.ts
+                tasks.controller.ts
+                tasks.module.ts
+    protos/
+        user.proto
+        task.proto
+    dist/
+        user.ts
+        task.ts
+    package.json
+```

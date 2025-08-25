@@ -1,5 +1,9 @@
 {
   "devDependencies": {
+    "@types/node": "^24.3.0",
     "ts-proto": "^2.7.7"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4"
   }
 }
