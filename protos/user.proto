@@ -4,32 +4,35 @@ package user;
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (UserResponse);
-  rpc FindAllUsers (Empty) returns (UsersResponse);
-  rpc FindUserById (FindByIdRequest) returns (UserResponse);
+  rpc FindAll (Empty) returns (UserListResponse);
+  rpc FindOne (UserByIdRequest) returns (UserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+  rpc RemoveUser (UserByIdRequest) returns (Empty);
 }
 
 message Empty {}
 
 message CreateUserRequest {
-  string username = 1;
+  string name = 1;
   string email = 2;
 }
 
-message FindByIdRequest {
+message UpdateUserRequest {
   int32 id = 1;
+  string name = 2;
+  string email = 3;
 }
 
-message User {
+message UserByIdRequest {
   int32 id = 1;
-  string username = 2;
-  string email = 3;
-  string created_at = 4;
 }
 
 message UserResponse {
-  User user = 1;
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
 }
 
-message UsersResponse {
-  repeated User users = 1;
+message UserListResponse {
+  repeated UserResponse users = 1;
 }

@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { GrpcMethod } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserByIdRequest,
+  Empty,
+} from '../../../protos/generated/user';
 
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @GrpcMethod('UserService', 'CreateUser')
+  async createUser(data: CreateUserRequest) {
+    const user = await this.usersService.create(data);
+    return { id: user.id, username: user.username, email: user.email };
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @GrpcMethod('UserService', 'FindAll')
+  async findAll(_: Empty) {
+    const users = await this.usersService.findAll();
+    return { users };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @GrpcMethod('UserService', 'FindOne')
+  async findOne(data: UserByIdRequest) {
+    const user = await this.usersService.findOne(data.id);
+    return { id: user.id, username: user.username, email: user.email };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @GrpcMethod('UserService', 'UpdateUser')
+  async updateUser(data: UpdateUserRequest) {
+    const user = await this.usersService.update(data.id, data);
+    return { id: user.id, username: user.username, email: user.email };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @GrpcMethod('UserService', 'RemoveUser')
+  async removeUser(data: UserByIdRequest) {
+    await this.usersService.remove(data.id);
+    return {};
   }
 }

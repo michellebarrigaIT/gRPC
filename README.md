@@ -25,8 +25,12 @@ $ npm run start:prod
 ```bash
 grpc/
     gateway/
-        users.gateway.ts
-    users/
+        src/
+        modules/
+            user.module.ts
+        main.ts
+
+    package.json    users/
         src/
             users/
                 dto/
@@ -48,5 +52,4 @@ grpc/
     dist/
         user.ts
         task.ts
-    package.json
 ```
