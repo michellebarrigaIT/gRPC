@@ -16,7 +16,7 @@ export interface Empty {
 }
 
 export interface CreateUserRequest {
-  name: string;
+  username: string;
   email: string;
 }
 
@@ -69,13 +69,13 @@ export const Empty: MessageFns<Empty> = {
 };
 
 function createBaseCreateUserRequest(): CreateUserRequest {
-  return { name: "", email: "" };
+  return { username: "", email: "" };
 }
 
 export const CreateUserRequest: MessageFns<CreateUserRequest> = {
   encode(message: CreateUserRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== "") {
-      writer.uint32(10).string(message.name);
+    if (message.username !== "") {
+      writer.uint32(10).string(message.username);
     }
     if (message.email !== "") {
       writer.uint32(18).string(message.email);
@@ -95,7 +95,7 @@ export const CreateUserRequest: MessageFns<CreateUserRequest> = {
             break;
           }
 
-          message.name = reader.string();
+          message.username = reader.string();
           continue;
         }
         case 2: {

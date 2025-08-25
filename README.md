@@ -25,6 +25,9 @@ $ npm run start:prod
 ```bash
 grpc/
     gateway/ 
+        proto/
+            user.ts
+            task.ts
     users/
         src/
             users/
@@ -33,6 +36,9 @@ grpc/
                 users.service.ts
                 users.controller.ts
                 users.module.ts
+            proto/
+                user.ts
+                task.ts
             main.ts
             app.module.ts
     tasks/
@@ -43,12 +49,12 @@ grpc/
                 tasks.service.ts
                 tasks.controller.ts
                 tasks.module.ts
+            proto/
+                user.ts
+                task.ts
     protos/
         user.proto
         task.proto
-        generated/
-            user.ts
-            task.ts
     build.sh
     package.json
 ```
