@@ -14,7 +14,7 @@ message Empty {}
 message CreateTaskRequest {
   string title = 1;
   string description = 2;
-  int32 created_by = 3;
+  int32 createdBy = 3;
 }
 
 message CompleteTaskRequest {
@@ -30,8 +30,8 @@ message Task {
   string title = 2;
   string description = 3;
   bool completed = 4;
-  int32 created_by = 5;
-  string created_at = 6;
+  int32 createdBy = 5;
+  string createdAt = 6;
 }
 
 message TaskResponse {

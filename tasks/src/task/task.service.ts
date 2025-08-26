@@ -8,7 +8,7 @@ import { RpcException, type ClientGrpc } from '@nestjs/microservices';
 import { UserServiceClient } from 'src/proto/user';
 import { lastValueFrom } from 'rxjs';
 import { status } from '@grpc/grpc-js';
-  
+
 @Injectable()
 export class TaskService {
   private userService!: UserServiceClient;
