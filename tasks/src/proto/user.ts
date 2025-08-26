@@ -22,7 +22,7 @@ export interface CreateUserRequest {
 
 export interface UpdateUserRequest {
   id: number;
-  name: string;
+  username: string;
   email: string;
 }
 
@@ -32,8 +32,9 @@ export interface UserByIdRequest {
 
 export interface UserResponse {
   id: number;
-  name: string;
+  username: string;
   email: string;
+  createdAt: string;
 }
 
 export interface UserListResponse {
@@ -117,7 +118,7 @@ export const CreateUserRequest: MessageFns<CreateUserRequest> = {
 };
 
 function createBaseUpdateUserRequest(): UpdateUserRequest {
-  return { id: 0, name: "", email: "" };
+  return { id: 0, username: "", email: "" };
 }
 
 export const UpdateUserRequest: MessageFns<UpdateUserRequest> = {
@@ -125,8 +126,8 @@ export const UpdateUserRequest: MessageFns<UpdateUserRequest> = {
     if (message.id !== 0) {
       writer.uint32(8).int32(message.id);
     }
-    if (message.name !== "") {
-      writer.uint32(18).string(message.name);
+    if (message.username !== "") {
+      writer.uint32(18).string(message.username);
     }
     if (message.email !== "") {
       writer.uint32(26).string(message.email);
@@ -154,7 +155,7 @@ export const UpdateUserRequest: MessageFns<UpdateUserRequest> = {
             break;
           }
 
-          message.name = reader.string();
+          message.username = reader.string();
           continue;
         }
         case 3: {
@@ -213,7 +214,7 @@ export const UserByIdRequest: MessageFns<UserByIdRequest> = {
 };
 
 function createBaseUserResponse(): UserResponse {
-  return { id: 0, name: "", email: "" };
+  return { id: 0, username: "", email: "", createdAt: "" };
 }
 
 export const UserResponse: MessageFns<UserResponse> = {
@@ -221,11 +222,14 @@ export const UserResponse: MessageFns<UserResponse> = {
     if (message.id !== 0) {
       writer.uint32(8).int32(message.id);
     }
-    if (message.name !== "") {
-      writer.uint32(18).string(message.name);
+    if (message.username !== "") {
+      writer.uint32(18).string(message.username);
     }
     if (message.email !== "") {
       writer.uint32(26).string(message.email);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(34).string(message.createdAt);
     }
     return writer;
   },
@@ -250,7 +254,7 @@ export const UserResponse: MessageFns<UserResponse> = {
             break;
           }
 
-          message.name = reader.string();
+          message.username = reader.string();
           continue;
         }
         case 3: {
@@ -259,6 +263,14 @@ export const UserResponse: MessageFns<UserResponse> = {
           }
 
           message.email = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.createdAt = reader.string();
           continue;
         }
       }

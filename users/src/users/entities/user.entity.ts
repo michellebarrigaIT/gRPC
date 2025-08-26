@@ -12,5 +12,5 @@ export class User {
   email!: string;
 
   @CreateDateColumn({ type: 'timestamptz' }) 
-  created_at!: Date;
+  createdAt!: Date;
 }

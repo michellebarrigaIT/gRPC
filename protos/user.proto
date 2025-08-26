@@ -19,7 +19,7 @@ message CreateUserRequest {
 
 message UpdateUserRequest {
   int32 id = 1;
-  string name = 2;
+  string username = 2;
   string email = 3;
 }
 
@@ -29,8 +29,9 @@ message UserByIdRequest {
 
 message UserResponse {
   int32 id = 1;
-  string name = 2;
+  string username = 2;
   string email = 3;
+  string createdAt = 4; 
 }
 
 message UserListResponse {
