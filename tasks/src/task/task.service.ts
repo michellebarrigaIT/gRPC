@@ -1,15 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from './entities/task.entity';
+import { RpcException, type ClientGrpc } from '@nestjs/microservices';
+import { UserServiceClient } from 'src/proto/user';
+import { lastValueFrom } from 'rxjs';
+import { status } from '@grpc/grpc-js';
+  
 @Injectable()
 export class TaskService {
-  create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+  private userService!: UserServiceClient;
+
+  constructor(
+    @InjectRepository(Task) 
+    private readonly taskRepository: Repository<Task>,
+    @Inject('USER_PACKAGE') private client: ClientGrpc,
+  ) {}
+
+  onModuleInit() {
+    this.userService = this.client.getService<UserServiceClient>('UserService');
+  }
+
+  async create(createTaskDto: CreateTaskDto) {
+    const task = this.taskRepository.create(createTaskDto);
+
+    try {
+      await lastValueFrom(this.userService.findOne({ id: task.createdBy }));
+    } catch (e) {
+      throw new RpcException({ code: status.NOT_FOUND, message: 'User does not exist' });
+    }
+
+    return this.taskRepository.save(task);
   }
 
   findAll() {
-    return `This action returns all task`;
+    return this.taskRepository.find();
   }
 
   findOne(id: number) {
