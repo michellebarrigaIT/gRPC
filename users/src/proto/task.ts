@@ -46,6 +46,14 @@ export interface TasksResponse {
   tasks: Task[];
 }
 
+export interface UpdateTaskRequest {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+  createdBy: number;
+}
+
 export const TASK_PACKAGE_NAME = "task";
 
 function createBaseEmpty(): Empty {
@@ -373,6 +381,87 @@ export const TasksResponse: MessageFns<TasksResponse> = {
   },
 };
 
+function createBaseUpdateTaskRequest(): UpdateTaskRequest {
+  return { id: 0, title: "", description: "", completed: false, createdBy: 0 };
+}
+
+export const UpdateTaskRequest: MessageFns<UpdateTaskRequest> = {
+  encode(message: UpdateTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
+    }
+    if (message.title !== "") {
+      writer.uint32(18).string(message.title);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.completed !== false) {
+      writer.uint32(32).bool(message.completed);
+    }
+    if (message.createdBy !== 0) {
+      writer.uint32(40).int32(message.createdBy);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateTaskRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateTaskRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.title = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.completed = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.createdBy = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
 export interface TaskServiceClient {
   createTask(request: CreateTaskRequest, metadata?: Metadata): Observable<TaskResponse>;
 
@@ -381,6 +470,10 @@ export interface TaskServiceClient {
   completeTask(request: CompleteTaskRequest, metadata?: Metadata): Observable<TaskResponse>;
 
   findTaskById(request: FindByIdRequest, metadata?: Metadata): Observable<TaskResponse>;
+
+  updateTask(request: UpdateTaskRequest, metadata?: Metadata): Observable<TaskResponse>;
+
+  removeTask(request: FindByIdRequest, metadata?: Metadata): Observable<Empty>;
 }
 
 export interface TaskServiceController {
@@ -400,11 +493,25 @@ export interface TaskServiceController {
     request: FindByIdRequest,
     metadata?: Metadata,
   ): Promise<TaskResponse> | Observable<TaskResponse> | TaskResponse;
+
+  updateTask(
+    request: UpdateTaskRequest,
+    metadata?: Metadata,
+  ): Promise<TaskResponse> | Observable<TaskResponse> | TaskResponse;
+
+  removeTask(request: FindByIdRequest, metadata?: Metadata): Promise<Empty> | Observable<Empty> | Empty;
 }
 
 export function TaskServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createTask", "findAllTasks", "completeTask", "findTaskById"];
+    const grpcMethods: string[] = [
+      "createTask",
+      "findAllTasks",
+      "completeTask",
+      "findTaskById",
+      "updateTask",
+      "removeTask",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("TaskService", method)(constructor.prototype[method], method, descriptor);
@@ -457,6 +564,24 @@ export const TaskServiceService = {
     responseSerialize: (value: TaskResponse): Buffer => Buffer.from(TaskResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): TaskResponse => TaskResponse.decode(value),
   },
+  updateTask: {
+    path: "/task.TaskService/UpdateTask",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: UpdateTaskRequest): Buffer => Buffer.from(UpdateTaskRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): UpdateTaskRequest => UpdateTaskRequest.decode(value),
+    responseSerialize: (value: TaskResponse): Buffer => Buffer.from(TaskResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): TaskResponse => TaskResponse.decode(value),
+  },
+  removeTask: {
+    path: "/task.TaskService/RemoveTask",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: FindByIdRequest): Buffer => Buffer.from(FindByIdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): FindByIdRequest => FindByIdRequest.decode(value),
+    responseSerialize: (value: Empty): Buffer => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer): Empty => Empty.decode(value),
+  },
 } as const;
 
 export interface TaskServiceServer extends UntypedServiceImplementation {
@@ -464,6 +589,8 @@ export interface TaskServiceServer extends UntypedServiceImplementation {
   findAllTasks: handleUnaryCall<Empty, TasksResponse>;
   completeTask: handleUnaryCall<CompleteTaskRequest, TaskResponse>;
   findTaskById: handleUnaryCall<FindByIdRequest, TaskResponse>;
+  updateTask: handleUnaryCall<UpdateTaskRequest, TaskResponse>;
+  removeTask: handleUnaryCall<FindByIdRequest, Empty>;
 }
 
 export interface MessageFns<T> {

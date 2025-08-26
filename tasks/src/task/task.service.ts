@@ -53,16 +53,25 @@ export class TaskService {
     if (task.completed) {
       throw new RpcException({ code: status.FAILED_PRECONDITION, message: 'Task already completed' });
     }
-    
+
     task.completed = true;
     return this.taskRepository.save(task);
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  async update(id: number, updateTaskDto: UpdateTaskDto) {
+    const task = await this.taskRepository.findOne({ where: { id } });
+
+    if (!task) throw new RpcException({ code: status.NOT_FOUND, message: 'Task not found' });
+
+    await this.taskRepository.update(id, updateTaskDto);
+    return this.taskRepository.findOne({ where: { id } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+  async remove(id: number) {
+    const task = await this.taskRepository.findOne({ where: { id } });
+
+    if (!task) throw new RpcException({ code: status.NOT_FOUND, message: 'Task not found' });
+    
+    return await this.taskRepository.remove(task);
   }
 }

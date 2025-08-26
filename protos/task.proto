@@ -7,6 +7,8 @@ service TaskService {
   rpc FindAllTasks (Empty) returns (TasksResponse);
   rpc CompleteTask (CompleteTaskRequest) returns (TaskResponse);
   rpc FindTaskById (FindByIdRequest) returns (TaskResponse);
+  rpc UpdateTask (UpdateTaskRequest) returns (TaskResponse);
+  rpc RemoveTask (FindByIdRequest) returns (Empty);
 }
 
 message Empty {}
@@ -40,4 +42,12 @@ message TaskResponse {
 
 message TasksResponse {
   repeated Task tasks = 1;
+}
+
+message UpdateTaskRequest {
+  int32 id = 1;
+  string title = 2;
+  string description = 3;
+  bool completed = 4;
+  int32 createdBy = 5;
 }

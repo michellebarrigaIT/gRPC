@@ -32,6 +32,18 @@ export class TaskController {
     return { task: this.map(t) };
   }
 
+  @GrpcMethod('TaskService', 'UpdateTask')
+  async updateTask(data: UpdateTaskDto) {
+    const t = await this.taskService.update(data.id, data);
+    return { task: this.map(t) };
+  }
+
+  @GrpcMethod('TaskService', 'RemoveTask')
+  async removeTask(payload: { id: number }) {
+    await this.taskService.remove(payload.id);
+    return {};
+  }
+
   private map = (t: any) => ({
     id: t.id,
     title: t.title,
