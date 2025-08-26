@@ -7,6 +7,7 @@ import {
   UserByIdRequest,
   Empty,
 } from '../proto/user';
+import { User } from './entities/user.entity';
 
 @Controller()
 export class UsersController {
@@ -27,7 +28,7 @@ export class UsersController {
   @GrpcMethod('UserService', 'FindOne')
   async findOne(data: UserByIdRequest) {
     const user = await this.usersService.findOne(data.id);
-    return { id: user.id, username: user.username, email: user.email };
+    return this.map(user);
   }
 
   @GrpcMethod('UserService', 'UpdateUser')
@@ -41,4 +42,11 @@ export class UsersController {
     await this.usersService.remove(data.id);
     return {};
   }
+
+  private map = (u: User) => ({
+    id: u.id,
+    username: u.username,
+    email: u.email,
+    createdAt: u.createdAt?.toISOString?.() ?? String(u.createdAt),
+  });
 }

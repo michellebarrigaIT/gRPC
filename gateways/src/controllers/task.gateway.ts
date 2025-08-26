@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Inject, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import type { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { CreateTaskRequest, TaskServiceClient } from 'src/proto/task';
+import { CreateTaskRequest, TaskServiceClient } from '../proto/task';
 
 
 @Controller('tasks')

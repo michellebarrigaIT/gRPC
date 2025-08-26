@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, InternalServerErrorException, NotFoundException, Param, Post, Put } from '@nestjs/common';
 import type { Client, ClientGrpc, GrpcMethod, Transport } from '@nestjs/microservices';
 import type { CreateUserRequest, UpdateUserRequest, UserServiceClient } from '../proto/user';
+import { catchError, lastValueFrom } from 'rxjs';
 
 @Controller('users')
 export class UsersGateway {
@@ -22,17 +23,44 @@ export class UsersGateway {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne({ id: Number(id) });
+  async findOne(@Param('id') id: string) {
+    return lastValueFrom(
+      this.userService.findOne({ id: Number(id) }).pipe(
+        catchError((error) => {
+          if (error.code === 5) {
+            throw new NotFoundException(error.details || 'User not found');
+          }
+          throw new InternalServerErrorException(error.details || 'Internal error');
+        }),
+      ),
+    );
   }
 
   @Put()
   update(@Body() data: UpdateUserRequest) {
-    return this.userService.updateUser(data);
+    return lastValueFrom(
+      this.userService.updateUser(data).pipe(
+        catchError((error) => {
+          if (error.code === 5) {
+            throw new NotFoundException(error.details || 'User not found');
+          }
+          throw new InternalServerErrorException(error.details || 'Internal error');
+        }),
+      ),
+    );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.removeUser( { id: Number(id) } );
+    return lastValueFrom(
+      this.userService.removeUser({ id: Number(id) }).pipe(
+        catchError((error) => {
+          if (error.code === 5) {
+            throw new NotFoundException(error.details || 'User not found');
+          }
+          throw new InternalServerErrorException(error.details || 'Internal error');
+        }),
+      ),
+    );
   }
 }
