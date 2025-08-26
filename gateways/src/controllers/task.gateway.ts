@@ -32,4 +32,32 @@ export class TasksGateway {
     const res = await lastValueFrom(this.taskService.findAllTasks({}));
     return res.tasks;
   }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    try {
+        const res = await lastValueFrom(this.taskService.findTaskById({ id: Number(id) }));
+        return res.task;
+    } catch (error: any) {
+        if (error.code === 5) {
+            throw new NotFoundException(error.details || 'Resource not found');
+        }
+        throw new InternalServerErrorException(error.details || 'Internal error');
+    }
+  }
+  
+  @Patch(':id/complete')
+  async completeTask(@Param('id') id: string) {
+    try {
+        const res = await lastValueFrom(this.taskService.completeTask({ id: Number(id) }));
+        return res.task;
+    } catch (error: any) {
+        if (error.code === 5) {
+            throw new NotFoundException(error.details || 'Resource not found');
+        } else if (error.code === 9) {
+            throw new NotFoundException(error.details || 'Task already completed :)');
+        }
+        throw new InternalServerErrorException(error.details || 'Internal error');
+    }
+  }
 }

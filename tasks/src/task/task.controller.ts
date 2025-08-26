@@ -20,6 +20,18 @@ export class TaskController {
     return { tasks: list.map(this.map) };
   }
 
+  @GrpcMethod('TaskService', 'CompleteTask')
+  async completeTask(payload: { id: number }) {
+    const t = await this.taskService.completeTask(payload.id);
+    return { task: this.map(t) };
+  }
+
+  @GrpcMethod('TaskService', 'FindTaskById')
+  async findTaskById(payload: { id: number }) {
+    const t = await this.taskService.findOne(payload.id);
+    return { task: this.map(t) };
+  }
+
   private map = (t: any) => ({
     id: t.id,
     title: t.title,
